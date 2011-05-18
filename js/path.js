@@ -1,14 +1,12 @@
-var Path = function() {
-  
-  var arg = arguments[0];
-  
-  if (isArray(arg)) {
+var Path = function(path) {
+
+  if (isArray(path)) {
     
-    console.log('array');
+    console.log('array of points');
     
-  } else if (isString(arg)) {
+  } else if (isString(path)) {
     
-    console.log('string');
+    console.log('string of path');
     
   } else {
     
@@ -16,22 +14,42 @@ var Path = function() {
     
   }
 
+};
 
-  // accepets: array of points (which are arrays themselves of length two)
-  // returns: ..
-  this.arrayOfPoints = function(points) {
-  
-  }
+Path.prototype = new Array();
+Path.prototype.pathFromPoints = computePathFromPoints;
+Path.prototype.pathFromPathSubset = computePathFromPathSubset;
+Path.prototype.clone = null;
+Path.prototype.toString = null;
 
-
-  // accepts: subset of an SVG path string (see http://www.w3.org/TR/SVG/paths.html), 
-  // where only the moveto, closepath and lineto commands are accepted
-  // returns: ...
-  this.pathString = function(path) {
-  
-  }
+// accepts: array of points (which are arrays themselves of length two)
+// returns: ..
+var computePathFromPoints = function(points) {
 
 };
+
+// accepts: subset of an SVG path string (see http://www.w3.org/TR/SVG/paths.html), 
+// where only the moveto, closepath and lineto commands are accepted
+// returns: ...
+var computePathFromPathSubset = function(path) {
+
+};
+
+// returns a new Path with the same points
+var clone = function() {
+  
+};
+
+// returns an SVG path string representing the Path
+var toString = function() {
+  
+}
+
+// map, filter, and slice must return Path objects rather than pure arrays
+var map;
+var filter;
+var slice;
+
 
 /* cursory type validation */
 

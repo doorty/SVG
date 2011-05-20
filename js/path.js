@@ -29,23 +29,39 @@ Path.prototype.slice = slice;
 var pathStringToArrayOfPoints = function(path) {
   
   var arr = [];
+
+  var re = /[^0-9]*([MLlz])[^0-9]*([0-9]+)[^0-9]([0-9]+)/g;    
+  var pointsStr = path.replace(re, "$1,$2,$3,"); // M,100,100,L,300,100,l,200,300,
+  var tempArr = pointsStr.split(',');
+
+  var i=0;
+  var total = tempArr.length;
+  for (i = 0; i < total; i++) {
+
+    switch(tempArr[i]) {
+      case 'M':  // absolute moveto    
+        // push point [x1, y1] to array
+        console.log('M = ' + tempArr[i]);        
+        arr.push([parseInt(tempArr[i+1]), parseInt(tempArr[i+2])]);
+        break;
   
-  switch('') {
-    case 'M':  // absolute moveto    
-      // push next [x, y] to array
-      break;
-    case 'L':  // absolute lineto
-      // push next [x, y] to array
-      break;
-    case 'l':  // relative lineto
-      // get last [x0, y0], add [x1, x2], push [x0+x1, y0+y1] to last 
-      break;
-    case 'z':  // closepath. this is optional. should always close path when drawn (do not add to array?)
-      break;
-  }
-  
-  
-  return [[0, 1]];
+      case 'L':  // absolute lineto
+        // push point [x1, y1] to array
+        console.log('L = ' + tempArr[i]);
+        arr.push([parseInt(tempArr[i+1]), parseInt(tempArr[i+2])]);
+        break;
+      case 'l':  // relative lineto
+        // get last point [x0, y0], add to point [x1, x2], then push [x0+x1, y0+y1] to array
+        console.log('l = ' + tempArr[i]);
+        arr.push([parseInt(tempArr[i-2]) + parseInt(tempArr[i+1]), parseInt(tempArr[i-1]) + parseInt(tempArr[i+2])]);
+        break;
+      default:  // closepath. this is optional. should always close path when drawn (do not add to array?)
+        console.log('not defined: ' + tempArr[i]);
+        break;   
+    }
+  }  
+    
+  return arr;
 };
 
 // returns a new Path with the same points

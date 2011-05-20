@@ -1,4 +1,5 @@
 window.onload = function() {
+/*
   var pathOfPoints = new Path([[5, 10], [10, 20], [5, 15]]);
   var pathOfSubpath = new Path('stringy');
   
@@ -10,6 +11,8 @@ window.onload = function() {
   if (pathOfSubpath instanceof Array) {
     console.log('pathOfSubpath instanceof Array === true');
   }
+*/
+
 /*
   var pathSlice = pathOfPoints.slice(0);
   if (pathSlice instanceof Path) {
@@ -22,6 +25,7 @@ window.onload = function() {
 */
   
   var result = pathStringToArrayOfPoints('M 100 100 L 300 100 L 200 300 z');
+  var result = pathStringToArrayOfPoints('M100 100L 300 100l 200 300');
   console.log(result.toString());
   
 };

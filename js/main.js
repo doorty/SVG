@@ -2,6 +2,9 @@ window.onload = function() {
 
   var pathOfPoints = new Path([[5, 10], [10, 20], [5, 15]]);
   var pathOfSubpath = new Path('M100 100L 300 100l 200 300'); 
+  var pathOfPointsClone = pathOfPoints.clone();
+  var pathOfSubpathSlice = pathOfSubpath.slice(1);
+  
   
   if (pathOfPoints instanceof Path) {
     console.log('pathOfPoints instanceof Path === true');
@@ -12,7 +15,10 @@ window.onload = function() {
   }
   
   console.log('pathOfPoints: ' + pathOfPoints.toString());
+  console.log('pathOfPointsClone: ' + pathOfPointsClone.toString());
   console.log('pathOfSubpath: ' + pathOfSubpath.toString());
+  console.log('pathOfSubpathSlice: ' + pathOfSubpathSlice.toString());
+  
 
   /*
   var pathOfSubpathClone = pathOfSubpath.clone();

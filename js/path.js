@@ -1,15 +1,72 @@
-// Q: How best to subclass Array? 
-// A: There is no one right way. Must take into account length property. 
-//    This way relies on non-standard __proto__ property.
-//    ...see http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-array/
-function Path(arg) {
+/** Path 
+ *
+ * A good discussion of the issues involved in subclassing Array:
+ * http://perfectionkills.com/how-ecmascript-5-still-does-not-allow-to-subclass-an-array/
+ * The implemented technique isn't perfect; It uses the non-standard __proto__ property
+ */
+
+/**
+ * Constructor
+ *
+ * Parameters 
+ * Array of points, with each point an array of length 2 
+ * Or an SVG path string -- starting with 'M', optionally ending in 'z', with 'L'/'l' in between
+ * 
+ * Returns
+ * Array
+ */
+
+function Path(svgPath) {
   
+  /*
+   * Private helper function to convert SVG path to array
+   */
+  var pathStringToArray = function(path) {
+    
+    var pathStr = path.slice(),
+        arr = [];
+
+    // parse step 1: onvert M 100 100 L300 100.. to M,100,100,L,300,100,
+    var re = /[^0-9]*([MLlz])[^0-9]*([0-9]+)[^0-9]([0-9]+)/g,    
+        pointsStr = pathStr.replace(re, "$1,$2,$3,"),
+        tempArr = pointsStr.split(',');
+
+    // parse step 2: add points to array based on command
+    var i,
+        len = tempArr.length;
+    for (i = 0; i < len; i++) {
+
+      var x, y;
+
+      switch(tempArr[i]) {
+        case 'M':  // absolute moveto
+        case 'L':  // absolute lineto
+          x = parseInt(tempArr[i+1], 10);
+          y = parseInt(tempArr[i+2], 10);
+          arr.push([x, y]);
+          break;
+        case 'l':  // relative lineto
+          x = parseInt(tempArr[i-2], 10) + parseInt(tempArr[i+1], 10);
+          y = parseInt(tempArr[i-1], 10) + parseInt(tempArr[i+2], 10);
+          arr.push([x, y]);
+          break;
+      }
+
+      i += 2; // move to next point
+    }  
+
+    return arr;
+  };
+  
+  /*
+   * Return array to use as path
+   */
   var arr = [];
   
-  if (arg instanceof Array) {
-    arr = arg;
+  if (svgPath instanceof Array) {
+    arr = svgPath.slice(); // get independent copy
   } else {
-    arr.push.apply(arr, pathStringToArrayOfPoints(arg));
+    arr.push.apply(arr, pathStringToArray(svgPath));
   }
   
   arr.__proto__ = Path.prototype;
@@ -17,84 +74,57 @@ function Path(arg) {
   return arr;
 }
 
-Path.prototype = new Array();
+/*
+ * Inherit from Array
+ */
+Path.prototype = []; // new Array();
 
-Path.prototype.last = function() {
-  return this[this.length - 1];
-};
-
-// returns a new Path with the same points
+/*
+ * Creates a new path from the existing one
+ */
 Path.prototype.clone = function() {
-  var arr = [];
-  
-  var i = this.length;
-  while (i--) {
-    arr.unshift(this[i]);
-  }
-  
-  return new Path(arr);
+  return new Path(this.slice());
 };
 
-// returns an SVG path string
+/*
+ * Creates an SVG path string
+ */
 Path.prototype.toString = function() {
   
   var str = 'M';
   
-  var i;
-  var numOfPoints = this.length;
+  var i,
+      numOfPoints = this.length;
   for(i = 0; i < numOfPoints; i++) {
     var point = this[i];
     str += ' ' + point[0].toString() + ' ' + point[1].toString() + ' L'; 
   }
   
-  str = str.slice(0, str.length-1) + 'z'; // back up one and override last 'L' with 'z'
+  // back up one and override last 'L' with 'z'
+  str = str.slice(0, str.length-1) + 'z'; 
   
   return str;
 };
 
-Path.prototype.map = function() {
+/*
+ * Creates a new array with the results of calling a 
+ * provided function on every element in this array.
+ */
+Path.prototype.map = function(callback /*, thisObject */) {
   return new Path(Array.prototype.map.apply(this, arguments));
 };
 
-Path.prototype.filter = function() {
+/*
+ * Creates a new path with all elements that pass the test 
+ * implemented by the provided function.
+ */
+Path.prototype.filter = function(callback /*, thisObject */) {
   return new Path(Array.prototype.filter.apply(this, arguments));
 };
 
-Path.prototype.slice = function() {
+/*
+ * Returns a one-level deep copy of a portion of a path.
+ */
+Path.prototype.slice = function(begin /*, end */) {
   return new Path(Array.prototype.slice.apply(this, arguments));
-};
-
-var pathStringToArrayOfPoints = function(path) {
-
-  var arr = [];
-
-  // convert M  100 100 L300 100.. to M,100,100,L,300,100,
-  var re = /[^0-9]*([MLlz])[^0-9]*([0-9]+)[^0-9]([0-9]+)/g;    
-  var pointsStr = new String(path).replace(re, "$1,$2,$3,"); 
-  var tempArr = pointsStr.split(',');
-
-  var i=0;
-  var len = tempArr.length;
-  for (i = 0; i < len; i++) {
-    
-    var x, y;
-
-    switch(tempArr[i]) {
-      case 'M': 
-      case 'L':
-        x = parseInt(tempArr[i+1]);
-        y = parseInt(tempArr[i+2]);
-        break;
-      case 'l':
-        // get last point [x0, y0], add to point [x1, x2], then push [x0+x1, y0+y1] to array
-        x = parseInt(tempArr[i-2]) + parseInt(tempArr[i+1]);
-        y = parseInt(tempArr[i-1]) + parseInt(tempArr[i+2])
-        break;  
-    }
-    
-    i += 2;
-    arr.push([x, y]);
-  }  
-    
-  return arr;
 };
